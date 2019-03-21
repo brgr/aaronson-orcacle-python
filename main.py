@@ -1,3 +1,4 @@
+import curses
 from collections import namedtuple
 from typing import List, Tuple
 from curses import wrapper
@@ -7,32 +8,9 @@ from function import *
 entry: Tuple[chr, chr] = namedtuple('entry', ['input', 'guess'])
 
 
-def process_input(last_input: str):
-    if last_input == 'KEY_LEFT':
-        return '0'
-    elif last_input == 'KEY_RIGHT':
-        return '1'
-    return ''
-
-
-def get_all_inputs(all_entries: List[entry]):
-    all_inputs = ''
-    for i_entry in all_entries:
-        all_inputs += i_entry.input
-    return all_inputs
-
-
-def get_all_guesses(all_entries: List[entry]):
-    all_guesses = ''
-    for i_entry in all_entries:
-        if i_entry.guess is not None:
-            all_guesses += str(i_entry.guess)
-        else:
-            all_guesses += 'x'
-    return all_guesses
-
-
 def main(screen):
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_RED)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_GREEN)
     screen.clear()
     print_introduction(screen)
     screen.refresh()
@@ -59,6 +37,31 @@ def main(screen):
 
                 screen.refresh()
                 screen.move(0, 0)  # move the cursor, s.t. it always stays at the top
+
+
+def process_input(last_input: str):
+    if last_input == 'KEY_LEFT':
+        return '0'
+    elif last_input == 'KEY_RIGHT':
+        return '1'
+    return ''
+
+
+def get_all_inputs(all_entries: List[entry]):
+    all_inputs = ''
+    for i_entry in all_entries:
+        all_inputs += i_entry.input
+    return all_inputs
+
+
+def get_all_guesses(all_entries: List[entry]):
+    all_guesses = ''
+    for i_entry in all_entries:
+        if i_entry.guess is not None:
+            all_guesses += str(i_entry.guess)
+        else:
+            all_guesses += 'x'
+    return all_guesses
 
 
 def print_screen(all_entries: List[entry], screen) -> None:
@@ -102,8 +105,14 @@ def print_last_inputs(all_entries: List[entry], screen) -> None:
     start_y = 6
     for i in range(number_of_printed_inputs):
         printed_entry = all_entries[-(i + 1)]
+        color_pair = curses.color_pair(0)
+        if printed_entry.guess is not None:
+            if int(printed_entry.input) != int(printed_entry.guess):
+                color_pair = curses.color_pair(1)
+            else:
+                color_pair = curses.color_pair(2)
         screen.addstr(start_y + i, 1, f'{i+1}. Your input was: {printed_entry.input} - '
-                                      f'My guess was: {printed_entry.guess}   ')
+                                      f'My guess was: {printed_entry.guess}   ', color_pair)
 
 
 if __name__ == '__main__':
