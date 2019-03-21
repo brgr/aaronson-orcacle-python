@@ -22,6 +22,16 @@ def get_all_inputs(all_entries: List[entry]):
     return all_inputs
 
 
+def get_all_guesses(all_entries: List[entry]):
+    all_guesses = ''
+    for i_entry in all_entries:
+        if i_entry.guess is not None:
+            all_guesses += str(i_entry.guess)
+        else:
+            all_guesses += 'x'
+    return all_guesses
+
+
 def main(screen):
     screen.clear()
     print_introduction(screen)
@@ -44,7 +54,8 @@ def main(screen):
                     current_five_grams, last_prediction = aaronson(get_all_inputs(all_entries), current_five_grams)
                 print_screen(all_entries, screen)
 
-                screen.addstr(12, 1, f'DEBUG: input: {get_all_inputs(all_entries)}')
+                screen.addstr(12, 1, f'DEBUG: input:   {get_all_inputs(all_entries)}')
+                screen.addstr(13, 1, f'DEBUG: guesses: {get_all_guesses(all_entries)}')
 
                 screen.refresh()
                 screen.move(0, 0)  # move the cursor, s.t. it always stays at the top
@@ -52,7 +63,8 @@ def main(screen):
 
 def print_screen(all_entries: List[entry], screen) -> None:
     print_introduction(screen)
-    # print_statistics(all_entries, screen)
+    if len(all_entries) > 6:
+        print_statistics(all_entries, screen)
     print_last_inputs(all_entries, screen)
 
 
@@ -61,8 +73,32 @@ def print_introduction(screen) -> None:
                         'as randomly as you can. After a few key presses, I\'ll start to guess your next move.')
 
 
-def print_last_inputs(last_inputs: List[str], screen):
-    number_of_printed_inputs = 5 if len(last_inputs) >= 5 else len(last_inputs)
+def print_statistics(all_entries: List[entry], screen):
+    number_of_guesses = get_number_of_guesses(all_entries)
+    number_of_correct_guesses = get_number_of_correct_guesses(all_entries)
+    if number_of_guesses > 0:
+        percentage_correctly_guessed = (number_of_correct_guesses / number_of_guesses) * 100
+        screen.addstr(4, 1, 'I guessed your input %.2f%% times' % percentage_correctly_guessed)
+
+
+def get_number_of_guesses(all_entries: List[entry]):
+    number_of_guesses = 0
+    for i_entry in all_entries:
+        if i_entry.guess is not None:
+            number_of_guesses += 1
+    return number_of_guesses
+
+
+def get_number_of_correct_guesses(all_entries: List[entry]):
+    number_of_correct_guesses = 0
+    for i_entry in all_entries:
+        if int(i_entry.input) == i_entry.guess:
+            number_of_correct_guesses += 1
+    return number_of_correct_guesses
+
+
+def print_last_inputs(all_entries: List[entry], screen) -> None:
+    number_of_printed_inputs = 5 if len(all_entries) >= 5 else len(all_entries)
     start_y = 6
     for i in range(number_of_printed_inputs):
         printed_entry = all_entries[-(i + 1)]
