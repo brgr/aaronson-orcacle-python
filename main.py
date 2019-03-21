@@ -2,6 +2,14 @@ from typing import List
 from curses import wrapper
 
 
+def process_input(last_input: str):
+    if last_input == 'KEY_LEFT':
+        return '0'
+    elif last_input == 'KEY_RIGHT':
+        return '1'
+    return ''
+
+
 def main(screen):
     screen.clear()
     print_introduction(screen)
@@ -14,11 +22,15 @@ def main(screen):
         if last_input == 'q':
             end = True
         else:
-            all_inputs.append(last_input)
-            print_screen(all_inputs, screen)
+            processed_input = process_input(last_input)
+            if processed_input != '':
+                all_inputs.append(processed_input)
+                print_screen(all_inputs, screen)
 
-            screen.refresh()
-            screen.move(0, 0)  # move the cursor, s.t. it always stays at the top
+                screen.addstr(12, 1, f'DEBUG: input: {"".join(all_inputs)}')
+
+                screen.refresh()
+                screen.move(0, 0)  # move the cursor, s.t. it always stays at the top
 
 
 def print_screen(all_inputs, screen):
