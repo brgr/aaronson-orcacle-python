@@ -7,32 +7,45 @@
 #################################################################
 
 import pprint
+import numpy as np
 
-def aaronson(input):
-
-    #init the database with all possible 5 digit combinations initialized with [0,0]
-    bin_i=[]
-    for i in range(0,32):
+def init() -> dict:
+    # init the five_grams with all possible 5 digit combinations initialized with [0,0]
+    bin_i = []
+    for i in range(0, 32):
         bin_i.append(bin(i)[2:].zfill(5))
-    database= {}
+    five_grams = {}
     for j in range(len(bin_i)):
-        database[bin_i[j]] = [0,0]
+        five_grams[bin_i[j]] = [0, 0]
+    return five_grams
 
 
-    #update the database
-    last_six = input[-6:]
-    sequence = last_six[:5]
-    print(str(sequence))
-    print(str(last_six[5]))
-    if int(last_six[5]) == 0:
-        database[str(sequence)][0]+=1
-        print("it was a 0")
+def aaronson(all_input, five_grams: dict):
+
+    # update the five_grams
+    last_six = all_input[-6:]
+    current_five_gram = five_grams[str(last_six[:5])]
+    if int(int(last_six[5])) == 0:
+        current_five_gram[0] = current_five_gram[0] + 1
     if int(last_six[5]) == 1:
-        database[str(sequence)][1]+=1
-        print("it was a 1")
+        current_five_gram[1] = current_five_gram[1] + 1
+
+    #prediction
+    if five_grams[str(all_input[-5:])][0]<five_grams[str(all_input[-5:])][1]: #check if for the last sequence more 0 than 1 proceded
+        prediction=1
+
+    elif five_grams[str(all_input[-5:])][0]==five_grams[str(all_input[-5:])][1]: #check if it's equally probable
+        prediction=np.random.randint(2, size=1)
+
+    else:
+        prediction=0
+
+    return five_grams, int(prediction)
 
 
-    return database
+prediction = None
+five_grams=init()
+five_grams, pred = aaronson('10011010101010', five_grams)
 
-database = aaronson('10011010101010')
-pprint.pprint(database)
+
+pprint.pprint(five_grams)
