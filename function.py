@@ -6,8 +6,8 @@
 #   sequence is done.                                           #
 #################################################################
 
-import pprint
 import numpy as np
+
 
 def init() -> dict:
     # init the five_grams with all possible 5 digit combinations initialized with [0,0]
@@ -20,8 +20,7 @@ def init() -> dict:
     return five_grams
 
 
-def aaronson(all_input, five_grams: dict):
-
+def aaronson(all_input, five_grams: dict) -> (dict, int):
     # update the five_grams
     last_six = all_input[-6:]
     current_five_gram = five_grams[str(last_six[:5])]
@@ -30,22 +29,21 @@ def aaronson(all_input, five_grams: dict):
     if int(last_six[5]) == 1:
         current_five_gram[1] = current_five_gram[1] + 1
 
-    #prediction
-    if five_grams[str(all_input[-5:])][0]<five_grams[str(all_input[-5:])][1]: #check if for the last sequence more 0 than 1 proceded
-        prediction=1
-
-    elif five_grams[str(all_input[-5:])][0]==five_grams[str(all_input[-5:])][1]: #check if it's equally probable
-        prediction=np.random.randint(2, size=1)
-
+    # prediction
+    zero_appeared_more_often_than_one = five_grams[str(all_input[-5:])][0] < five_grams[str(all_input[-5:])][1]
+    zero_appeared_as_often_as_one = five_grams[str(all_input[-5:])][0] == five_grams[str(all_input[-5:])][1]
+    if zero_appeared_more_often_than_one:
+        prediction = 1
+    elif zero_appeared_as_often_as_one:
+        prediction = np.random.randint(2, size=1)
     else:
-        prediction=0
+        prediction = 0
 
     return five_grams, int(prediction)
 
 
-prediction = None
-five_grams=init()
-five_grams, pred = aaronson('10011010101010', five_grams)
+# prediction = None
+# five_grams = init()
+# five_grams, pred = aaronson('101010', five_grams)
 
-
-pprint.pprint(five_grams)
+# pprint.pprint(five_grams)

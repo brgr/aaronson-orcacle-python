@@ -1,5 +1,10 @@
-from typing import List
+from collections import namedtuple
+from typing import List, Tuple
 from curses import wrapper
+
+from function import *
+
+entry: Tuple[chr, chr] = namedtuple('entry', ['input', 'guess'])
 
 
 def process_input(last_input: str):
@@ -10,35 +15,48 @@ def process_input(last_input: str):
     return ''
 
 
+def get_all_inputs(all_entries: List[entry]):
+    all_inputs = ''
+    for i_entry in all_entries:
+        all_inputs += i_entry.input
+    return all_inputs
+
+
 def main(screen):
     screen.clear()
     print_introduction(screen)
     screen.refresh()
 
+    current_five_grams: dict = init()
+    last_prediction: int = None
     end = False
-    all_inputs: List[str] = []
+    all_entries: List[entry] = []
     while not end:
-        last_input = screen.getkey()
+        last_input: chr = screen.getkey()
         if last_input == 'q':
             end = True
         else:
             processed_input = process_input(last_input)
             if processed_input != '':
-                all_inputs.append(processed_input)
-                print_screen(all_inputs, screen)
+                all_entries.append(entry(process_input(last_input), last_prediction))
 
-                screen.addstr(12, 1, f'DEBUG: input: {"".join(all_inputs)}')
+                if len(all_entries) > 6:
+                    current_five_grams, last_prediction = aaronson(get_all_inputs(all_entries), current_five_grams)
+                print_screen(all_entries, screen)
+
+                screen.addstr(12, 1, f'DEBUG: input: {get_all_inputs(all_entries)}')
 
                 screen.refresh()
                 screen.move(0, 0)  # move the cursor, s.t. it always stays at the top
 
 
-def print_screen(all_inputs, screen):
+def print_screen(all_entries: List[entry], screen) -> None:
     print_introduction(screen)
-    print_last_inputs(all_inputs, screen)
+    # print_statistics(all_entries, screen)
+    print_last_inputs(all_entries, screen)
 
 
-def print_introduction(screen):
+def print_introduction(screen) -> None:
     screen.addstr(1, 1, 'Do you think you can type randomly? Let\'s find out!\n Type the Left/Right arrow key '
                         'as randomly as you can. After a few key presses, I\'ll start to guess your next move.')
 
@@ -47,7 +65,10 @@ def print_last_inputs(last_inputs: List[str], screen):
     number_of_printed_inputs = 5 if len(last_inputs) >= 5 else len(last_inputs)
     start_y = 6
     for i in range(number_of_printed_inputs):
-        screen.addstr(start_y + i, 1, f'{i+1}. Your input was: {last_inputs[-(i+1)]}')
+        printed_entry = all_entries[-(i + 1)]
+        screen.addstr(start_y + i, 1, f'{i+1}. Your input was: {printed_entry.input} - '
+                                      f'My guess was: {printed_entry.guess}   ')
 
 
-wrapper(main)
+if __name__ == '__main__':
+    wrapper(main)
